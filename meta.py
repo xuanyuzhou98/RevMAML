@@ -83,6 +83,8 @@ class Meta(nn.Module):
         for i in range(task_num):
 
             # 1. run the i-th task and compute loss for k=0
+            print("here is the input shape")
+            print(x_spt[i].shape)
             logits = self.net(x_spt[i])
             loss = F.cross_entropy(logits, y_spt[i])
             grad = torch.autograd.grad(loss, self.net.parameters())
