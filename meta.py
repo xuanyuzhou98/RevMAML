@@ -7,6 +7,7 @@ from    torch import optim
 import  numpy as np
 
 from    learner import Learner
+from    iRevNet import iRevNet
 from    copy import deepcopy
 
 
@@ -31,8 +32,9 @@ class Meta(nn.Module):
         self.update_step = args.update_step
         self.update_step_test = args.update_step_test
 
-
-        self.net = Learner(config, args.imgc, args.imgsz)
+        self.net = iRevNet(nBlocks=[6, 16, 72, 6], nStrides=[2, 2, 2, 2], nClasses=args.n_way, nChannels=None, init_ds=2,
+                 dropout_rate=0., affineBN=True, in_shape=[3, 224, 224], mult=4)
+        #self.net = Learner(config, args.imgc, args.imgsz)
         self.meta_optim = optim.Adam(self.net.parameters(), lr=self.meta_lr)
 
 
