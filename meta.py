@@ -83,11 +83,11 @@ class Meta(nn.Module):
         for i in range(task_num):
 
             # 1. run the i-th task and compute loss for k=0
-            print("here is the input shape")
+            print("input shape is")
             print(x_spt[i].shape)
             logits = self.net(x_spt[i])[0]
             loss = F.cross_entropy(logits, y_spt[i])
-            grad = torch.autograd.grad(loss, self.net.parameters())
+            grad = torch.autograd.grad(loss, self.net.parameters(), allow_unused=True)
             fast_weights = list(map(lambda p: p[1] - self.update_lr * p[0], zip(grad, self.net.parameters())))
 
             # this is the loss and accuracy before first update
