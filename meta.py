@@ -87,6 +87,10 @@ class Meta(nn.Module):
             print(x_spt[i].shape)
             logits = self.net(x_spt[i])[0]
             loss = F.cross_entropy(logits, y_spt[i])
+            print("print parameters not required grad")
+            for p in self.net.parameters():
+                if not p.requires_grad:
+                     print(p.name, p.data)
             grad = torch.autograd.grad(loss, self.net.parameters())
             fast_weights = list(map(lambda p: p[1] - self.update_lr * p[0], zip(grad, self.net.parameters())))
 
