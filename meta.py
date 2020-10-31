@@ -85,7 +85,7 @@ class Meta(nn.Module):
             # 1. run the i-th task and compute loss for k=0
             print("here is the input shape")
             print(x_spt[i].shape)
-            logits = self.net(x_spt[i])
+            logits = self.net(x_spt[i])[0]
             loss = F.cross_entropy(logits, y_spt[i])
             grad = torch.autograd.grad(loss, self.net.parameters())
             fast_weights = list(map(lambda p: p[1] - self.update_lr * p[0], zip(grad, self.net.parameters())))
@@ -93,7 +93,7 @@ class Meta(nn.Module):
             # this is the loss and accuracy before first update
             with torch.no_grad():
                 # [setsz, nway]
-                logits_q = self.net(x_qry[i])
+                logits_q = self.net(x_qry[i])[0]
                 loss_q = F.cross_entropy(logits_q, y_qry[i])
                 losses_q[0] += loss_q
 
@@ -104,7 +104,7 @@ class Meta(nn.Module):
             # this is the loss and accuracy after the first update
             with torch.no_grad():
                 # [setsz, nway]
-                logits_q = self.net(x_qry[i])
+                logits_q = self.net(x_qry[i])[0]
                 loss_q = F.cross_entropy(logits_q, y_qry[i])
                 losses_q[1] += loss_q
                 # [setsz]
@@ -114,14 +114,14 @@ class Meta(nn.Module):
 
             for k in range(1, self.update_step):
                 # 1. run the i-th task and compute loss for k=1~K-1
-                logits = self.net(x_spt[i])
+                logits = self.net(x_spt[i])[0]
                 loss = F.cross_entropy(logits, y_spt[i])
                 # 2. compute grad on theta_pi
                 grad = torch.autograd.grad(loss, fast_weights)
                 # 3. theta_pi = theta_pi - train_lr * grad
                 fast_weights = list(map(lambda p: p[1] - self.update_lr * p[0], zip(grad, fast_weights)))
 
-                logits_q = self.net(x_qry[i])
+                logits_q = self.net(x_qry[i])[0]
                 # loss_q will be overwritten and just keep the loss_q on last update step.
                 loss_q = F.cross_entropy(logits_q, y_qry[i])
                 losses_q[k + 1] += loss_q
