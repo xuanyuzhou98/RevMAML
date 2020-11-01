@@ -8,6 +8,7 @@ import  numpy as np
 
 from    learner import Learner
 from    copy import deepcopy
+from revnet.models.iRevNet import iRevNet
 
 
 
@@ -32,7 +33,12 @@ class Meta(nn.Module):
         self.update_step_test = args.update_step_test
 
 
-        self.net = Learner(config, args.imgc, args.imgsz)
+        # self.net = Learner(config, args.imgc, args.imgsz)
+        # TODO: specify parameters
+        self.net = iRevNet(nBlocks=[6, 16, 72, 6], nStrides=[2, 2, 2, 2],
+                nChannels=None, nClasses=1000, init_ds=2,
+                dropout_rate=0., affineBN=True, in_shape=[1, 28, 28],
+                mult=4)
         self.meta_optim = optim.Adam(self.net.parameters(), lr=self.meta_lr)
 
 

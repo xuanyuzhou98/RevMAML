@@ -2,7 +2,7 @@ import  torch
 from    torch import nn
 from    torch.nn import functional as F
 import  numpy as np
-
+from revnet.models.iRevNet import iRevNet
 
 
 class Learner(nn.Module):
@@ -20,59 +20,59 @@ class Learner(nn.Module):
         super(Learner, self).__init__()
 
 
-        self.config = config
-
-        # this dict contains all tensors needed to be optimized
-        self.vars = nn.ParameterList()
-        # running_mean and running_var
-        self.vars_bn = nn.ParameterList()
-
-        for i, (name, param) in enumerate(self.config):
-            if name is 'conv2d':
-                # [ch_out, ch_in, kernelsz, kernelsz]
-                w = nn.Parameter(torch.ones(*param[:4]))
-                # gain=1 according to cbfin's implementation
-                torch.nn.init.kaiming_normal_(w)
-                self.vars.append(w)
-                # [ch_out]
-                self.vars.append(nn.Parameter(torch.zeros(param[0])))
-
-            elif name is 'convt2d':
-                # [ch_in, ch_out, kernelsz, kernelsz, stride, padding]
-                w = nn.Parameter(torch.ones(*param[:4]))
-                # gain=1 according to cbfin's implementation
-                torch.nn.init.kaiming_normal_(w)
-                self.vars.append(w)
-                # [ch_in, ch_out]
-                self.vars.append(nn.Parameter(torch.zeros(param[1])))
-
-            elif name is 'linear':
-                # [ch_out, ch_in]
-                w = nn.Parameter(torch.ones(*param))
-                # gain=1 according to cbfinn's implementation
-                torch.nn.init.kaiming_normal_(w)
-                self.vars.append(w)
-                # [ch_out]
-                self.vars.append(nn.Parameter(torch.zeros(param[0])))
-
-            elif name is 'bn':
-                # [ch_out]
-                w = nn.Parameter(torch.ones(param[0]))
-                self.vars.append(w)
-                # [ch_out]
-                self.vars.append(nn.Parameter(torch.zeros(param[0])))
-
-                # must set requires_grad=False
-                running_mean = nn.Parameter(torch.zeros(param[0]), requires_grad=False)
-                running_var = nn.Parameter(torch.ones(param[0]), requires_grad=False)
-                self.vars_bn.extend([running_mean, running_var])
-
-
-            elif name in ['tanh', 'relu', 'upsample', 'avg_pool2d', 'max_pool2d',
-                          'flatten', 'reshape', 'leakyrelu', 'sigmoid']:
-                continue
-            else:
-                raise NotImplementedError
+        # self.config = config
+        #
+        # # this dict contains all tensors needed to be optimized
+        # self.vars = nn.ParameterList()
+        # # running_mean and running_var
+        # self.vars_bn = nn.ParameterList()
+        #
+        # for i, (name, param) in enumerate(self.config):
+        #     if name is 'conv2d':
+        #         # [ch_out, ch_in, kernelsz, kernelsz]
+        #         w = nn.Parameter(torch.ones(*param[:4]))
+        #         # gain=1 according to cbfin's implementation
+        #         torch.nn.init.kaiming_normal_(w)
+        #         self.vars.append(w)
+        #         # [ch_out]
+        #         self.vars.append(nn.Parameter(torch.zeros(param[0])))
+        #
+        #     elif name is 'convt2d':
+        #         # [ch_in, ch_out, kernelsz, kernelsz, stride, padding]
+        #         w = nn.Parameter(torch.ones(*param[:4]))
+        #         # gain=1 according to cbfin's implementation
+        #         torch.nn.init.kaiming_normal_(w)
+        #         self.vars.append(w)
+        #         # [ch_in, ch_out]
+        #         self.vars.append(nn.Parameter(torch.zeros(param[1])))
+        #
+        #     elif name is 'linear':
+        #         # [ch_out, ch_in]
+        #         w = nn.Parameter(torch.ones(*param))
+        #         # gain=1 according to cbfinn's implementation
+        #         torch.nn.init.kaiming_normal_(w)
+        #         self.vars.append(w)
+        #         # [ch_out]
+        #         self.vars.append(nn.Parameter(torch.zeros(param[0])))
+        #
+        #     elif name is 'bn':
+        #         # [ch_out]
+        #         w = nn.Parameter(torch.ones(param[0]))
+        #         self.vars.append(w)
+        #         # [ch_out]
+        #         self.vars.append(nn.Parameter(torch.zeros(param[0])))
+        #
+        #         # must set requires_grad=False
+        #         running_mean = nn.Parameter(torch.zeros(param[0]), requires_grad=False)
+        #         running_var = nn.Parameter(torch.ones(param[0]), requires_grad=False)
+        #         self.vars_bn.extend([running_mean, running_var])
+        #
+        #
+        #     elif name in ['tanh', 'relu', 'upsample', 'avg_pool2d', 'max_pool2d',
+        #                   'flatten', 'reshape', 'leakyrelu', 'sigmoid']:
+        #         continue
+        #     else:
+        #         raise NotImplementedError
 
 
 
