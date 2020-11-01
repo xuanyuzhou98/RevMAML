@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-from .model_utils import split, merge, injective_pad, psi
+from revnet.models.model_utils import split, merge, injective_pad, split, merge, injective_pad, psi
 
 
 class irevnet_block(nn.Module):
@@ -96,7 +96,7 @@ class iRevNet(nn.Module):
             nChannels = [self.in_ch//2, self.in_ch//2 * 4,
                          self.in_ch//2 * 4**2, self.in_ch//2 * 4**3]
 
-        self.init_psi = psi(self.init_ds)
+        # self.init_psi = psi(self.init_ds)
         self.stack = self.irevnet_stack(irevnet_block, nChannels, nBlocks,
                                         nStrides, dropout_rate=dropout_rate,
                                         affineBN=affineBN, in_ch=self.in_ch,
@@ -125,8 +125,8 @@ class iRevNet(nn.Module):
     def forward(self, x):
         """ irevnet forward """
         n = self.in_ch//2
-        if self.init_ds != 0:
-            x = self.init_psi.forward(x)
+        # if self.init_ds != 0:
+            # x = self.init_psi.forward(x)
         out = (x[:, :n, :, :], x[:, n:, :, :])
         for block in self.stack:
             out = block.forward(out)
@@ -143,18 +143,17 @@ class iRevNet(nn.Module):
         for i in range(len(self.stack)):
             out = self.stack[-1-i].inverse(out)
         out = merge(out[0],out[1])
-        if self.init_ds != 0:
-            x = self.init_psi.inverse(out)
-        else:
-            x = out
+        # if self.init_ds != 0:
+        #     x = self.init_psi.inverse(out)
+        # else:
+        #     x = out
+        x = out
         return x
 
 
 if __name__ == '__main__':
-    model = iRevNet(nBlocks=[6, 16, 72, 6], nStrides=[2, 2, 2, 2],
-                    nChannels=None, nClasses=1000, init_ds=2,
-                    dropout_rate=0., affineBN=True, in_shape=[3, 224, 224],
-                    mult=4)
-    y = model(Variable(torch.randn(1, 3, 224, 224)))
+    model = iRevNet([4,4,4], [1,2,2], 5, nChannels=[16, 64, 256], init_ds=0,
+                 dropout_rate=0.1, affineBN=True, in_shape=[1, 28, 28], mult=4)
+    y = model(Variable(torch.randn(1, 1, 28, 28)))
     print(model.parameters())
     print(y.size())
